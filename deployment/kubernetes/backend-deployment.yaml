@@ -1,0 +1,57 @@
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: kmrl-doc-automation
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: kmrl-backend:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_SERVER
+          value: "postgres"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_DB
+          value: "document_automation"
+        - name: REDIS_HOST
+          value: "redis"
+        - name: ELASTICSEARCH_HOST
+          value: "elasticsearch"
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: kmrl-doc-automation
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: ClusterIP

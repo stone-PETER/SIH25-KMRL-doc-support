@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: kmrl-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: document_automation
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - kmrl-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: kmrl-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kmrl-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: kmrl-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - kmrl-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: kmrl-backend
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=document_automation
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+    volumes:
+      - ./backend/storage:/app/storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    networks:
+      - kmrl-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kmrl-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - kmrl-network
+
+  # n8n Workflow Automation
+  n8n:
+    image: n8nio/n8n
+    container_name: kmrl-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n-workflows:/workflows
+    networks:
+      - kmrl-network
+
+volumes:
+  postgres_data:
+  es_data:
+  n8n_data:
+
+networks:
+  kmrl-network:
+    driver: bridge
