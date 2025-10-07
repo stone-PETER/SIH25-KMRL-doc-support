@@ -1,0 +1,63 @@
+.upload {
+  padding: 20px;
+}
+
+.upload h2 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.upload-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-group input[type="file"] {
+  padding: 10px;
+  width: 100%;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.upload-info {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.upload-info h3 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.upload-info ul {
+  list-style: none;
+  padding: 0;
+}
+
+.upload-info li {
+  padding: 5px 0;
+  color: #666;
+}
+
+.upload-info p {
+  margin-top: 15px;
+  color: #666;
+  font-style: italic;
+}

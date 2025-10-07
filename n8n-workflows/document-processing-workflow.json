@@ -1,0 +1,112 @@
+{
+  "name": "Document Processing Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/webhook/document-upload",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/ingestion/upload",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "jsonParameters": true
+      },
+      "id": "upload-document",
+      "name": "Upload Document",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/ocr/process/{{$json.document_id}}",
+        "authentication": "none",
+        "requestMethod": "POST"
+      },
+      "id": "process-ocr",
+      "name": "Process OCR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/classification/classify/{{$json.document_id}}",
+        "authentication": "none",
+        "requestMethod": "POST"
+      },
+      "id": "classify-document",
+      "name": "Classify Document",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/metadata/extract/{{$json.document_id}}",
+        "authentication": "none",
+        "requestMethod": "POST"
+      },
+      "id": "extract-metadata",
+      "name": "Extract Metadata",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/search/index/{{$json.document_id}}",
+        "authentication": "none",
+        "requestMethod": "POST"
+      },
+      "id": "index-document",
+      "name": "Index for Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{"node": "Upload Document", "type": "main", "index": 0}]]
+    },
+    "Upload Document": {
+      "main": [[{"node": "Process OCR", "type": "main", "index": 0}]]
+    },
+    "Process OCR": {
+      "main": [[{"node": "Classify Document", "type": "main", "index": 0}]]
+    },
+    "Classify Document": {
+      "main": [[{"node": "Extract Metadata", "type": "main", "index": 0}]]
+    },
+    "Extract Metadata": {
+      "main": [[{"node": "Index for Search", "type": "main", "index": 0}]]
+    },
+    "Index for Search": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
